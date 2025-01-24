@@ -8,6 +8,8 @@ import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import static utils.Constants.Environment.*;
+
+import entities.EnemyManager;
 import entities.Player;
 import levels.LevelManager;
 import main.Game;
@@ -17,6 +19,8 @@ import utils.LoadSave;
 public class Playing extends State implements Statemethods {
 	private Player player;
 	private LevelManager levelManger;
+	private EnemyManager enemyManager;
+	
 	private boolean paused=false;
 	private PauseOverlay pauseOverlay;
 	//pomeranje ekrana levela
@@ -47,6 +51,7 @@ public class Playing extends State implements Statemethods {
 	
 	private void initClasses() {
 		levelManger=new LevelManager(game);
+		enemyManager= new EnemyManager(this);
 		player = new Player(200, 200, (int) (64 * game.SCALE), (int) (40 * game.SCALE));
 		player.loadLevelData(levelManger.getCurrentLevel().getLeveldata());
 		pauseOverlay=new PauseOverlay(this);
@@ -58,6 +63,7 @@ public class Playing extends State implements Statemethods {
 		if(!paused) {
 			levelManger.update();
 			player.update();
+			enemyManager.update();
 			checkCloseToBorder();
 		}else {
 			pauseOverlay.update();
@@ -97,6 +103,8 @@ public class Playing extends State implements Statemethods {
 		
 		levelManger.draw(g, xLvlOffset);
 		player.render(g, xLvlOffset);
+		enemyManager.draw(g,xLvlOffset);
+		
 		if (paused) {
 			g.setColor(new Color(0,0,0,150));
 			g.fillRect(0, 0, Game.GAME_WIDTH, Game.GAME_HIGHT);
