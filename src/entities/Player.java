@@ -100,8 +100,6 @@ public class Player extends Entity {
 
 			if (jump)
 				jump();
-			//if (!left && !right && !inAir)
-			//	return;
 			if(!inAir)
 				if((!left && !right) || (left && right))
 					return;

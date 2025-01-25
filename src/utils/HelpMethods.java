@@ -27,7 +27,10 @@ public class HelpMethods {
 		}
 		float xindex=x/Game.TILES_SIZE;
 		float yindex=y/Game.TILES_SIZE;
-		int value = lvldata[(int)yindex][(int)xindex];
+		return isTileSolid((int)xindex, (int)yindex, lvldata);
+	}
+	public static boolean isTileSolid(int xtile,int yTile,int[][] lvldata) {
+		int value = lvldata[yTile][xtile];
 		if(value>=48 || value<0 || value!=11) {
 			return true;
 		}else {
@@ -59,12 +62,37 @@ public class HelpMethods {
 
 	}
 	public static boolean isEntityOnFloor(Rectangle2D.Float hitbox, int[][] lvlData) {
-		//proverim donju levu i donju desnu ivicu pravougaonika da li udaraju u 'cvrsto'
-		if(!isSolid(hitbox.x, hitbox.y+hitbox.height+1, lvlData) && !isSolid(hitbox.x+hitbox.width, hitbox.y+hitbox.height+1, lvlData)) {
-			return false;
+		// Check the pixel below bottomleft and bottomright
+		if (!isSolid(hitbox.x, hitbox.y + hitbox.height + 1, lvlData))
+			if (!isSolid(hitbox.x + hitbox.width, hitbox.y + hitbox.height + 1, lvlData))
+				return false;
+
+		return true;
+
+	}
+	public static boolean isFloor(Rectangle2D.Float hitbox, float xSpeed, int[][] lvlData) {
+		return isSolid(hitbox.x + xSpeed, hitbox.y + hitbox.height + 1, lvlData);
+	}
+	public static boolean isAllTilesWalkable(int xStart,int xEnd,int y,int[][] lvlData) {
+		for (int i = 0; i < xEnd-xStart; i++) {
+			if(isTileSolid(xStart+i, y, lvlData)) {
+				return false;
+			}
+							//y+1 proveravam jedno polje ispod
+			if(!isTileSolid(xStart+i, y+1, lvlData)) {
+				return false;
+			}
 		}
 		return true;
 	}
-	
-	
+	public static boolean isSightClear(int[][] lvlData,Rectangle2D.Float firstHitbox,Rectangle2D.Float secondHitbox,int tileY) {
+		int fistXTile =(int)(firstHitbox.x / Game.TILES_SIZE);
+		int secondXTile =(int)(secondHitbox.x / Game.TILES_SIZE);
+		
+		if(fistXTile>secondXTile) {
+			return isAllTilesWalkable(secondXTile, fistXTile, tileY, lvlData);
+		}else {
+			return isAllTilesWalkable(fistXTile, secondXTile, tileY, lvlData);
+		}
+	}
 }
