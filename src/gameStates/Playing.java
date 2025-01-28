@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D.Float;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
@@ -52,7 +53,7 @@ public class Playing extends State implements Statemethods {
 	private void initClasses() {
 		levelManger=new LevelManager(game);
 		enemyManager= new EnemyManager(this);
-		player = new Player(200, 200, (int) (64 * game.SCALE), (int) (40 * game.SCALE));
+		player = new Player(200, 200, (int) (64 * game.SCALE), (int) (40 * game.SCALE),this);
 		player.loadLevelData(levelManger.getCurrentLevel().getLeveldata());
 		pauseOverlay=new PauseOverlay(this);
 	}
@@ -199,6 +200,10 @@ public class Playing extends State implements Statemethods {
 	}
 	public void windowLostFocus() {
 		player.resetDirBooleans();
+	}
+
+	public void checkEnemy(Float attackBox) {
+		enemyManager.checkEnemyHit(attackBox);
 	}
 
 	

@@ -9,6 +9,7 @@ import static utils.HelpMethods.isFloor;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.Rectangle2D.Float;
 
 import main.Game;
 public class Crabby extends Enemy {
@@ -26,7 +27,7 @@ public class Crabby extends Enemy {
 		attackBoxOffsetX = (int)(Game.SCALE*30);
 	}
 	public void update(int[][] lvlData,Player player) {
-		updateMove(lvlData,player);
+		updateBehavoiur(lvlData,player);
 		updateAnimationTick();
 		updateAttackBox();
 	}
@@ -34,7 +35,7 @@ public class Crabby extends Enemy {
 		attackBox.x=hitbox.x - attackBoxOffsetX;
 		attackBox.y=hitbox.y ;
 	}
-	private void updateMove(int[][] lvlData, Player player) {
+	private void updateBehavoiur(int[][] lvlData, Player player) {
 		if (firstUpdate) 
 			firstUpdateCheck(lvlData);
 		
@@ -52,6 +53,17 @@ public class Crabby extends Enemy {
 				if(isPlayerCloseForAttack(player))
 					newState(ATTACK);
 				move(lvlData);
+				break;
+			case ATTACK:
+				if(aniIndex==0) {
+					attackChecked=false;
+				}
+				if(aniIndex==3 && !attackChecked) {
+					checkEnemyHit(player,attackBox);
+				}
+				break;
+			case HIT:
+				newState(RUNNING);
 				break;
 			}
 		}
@@ -74,13 +86,6 @@ public class Crabby extends Enemy {
 		}else
 			return 1;
 	}
-	public void hurt(int amount) {
-		currentHealth-=amount;
-		if(currentHealth<=0) {
-			newState(DEAD);
-		}else {
-			newState(HIT);
-		}
-	}
+	
 
 }

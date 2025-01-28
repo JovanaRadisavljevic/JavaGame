@@ -22,6 +22,7 @@ public abstract class Enemy extends Entity {
 	protected int maxHealth;
 	protected int currentHealth;
 	protected boolean active= true;
+	protected boolean attackChecked;
 	
 	public Enemy(float x, float y, int width, int height, int enemyType) {
 		super(x, y, width, height);
@@ -124,5 +125,20 @@ public abstract class Enemy extends Entity {
 	}
 	public boolean isActive() {
 		return active;
+	}
+	public void hurt(int amount) {
+		currentHealth-=amount;
+		if(currentHealth<=0) {
+			newState(DEAD);
+		}else {
+			newState(HIT);
+		}
+	}
+	protected void checkEnemyHit(Player player, Float attackBox) {
+		if(attackBox.intersects(player.hitbox)) {
+			player.changeHealth(-getEnemyDamage(enemyType));
+		}
+		attackChecked=true;
+		
 	}
 }

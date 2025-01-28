@@ -28,8 +28,12 @@ public class EnemyManager {
 	}
 
 	public void update(int[][] lvlData,Player player) {
-		for (Crabby c : crabbies)
-			c.update(lvlData,player);
+		for (Crabby c : crabbies) {
+			if(c.isActive()) {
+				c.update(lvlData,player);
+			}
+		}
+			
 	}
 
 	public void draw(Graphics g, int xLvlOffset) {
@@ -38,17 +42,19 @@ public class EnemyManager {
 
 	private void drawCrabs(Graphics g, int xLvlOffset) {
 		for (Crabby c : crabbies) {
-			g.drawImage(crabbyArr[c.getEnemyState()][c.getAniIndex()], 
-					(int) c.getHitbox().x - xLvlOffset - CRABBY_DRAWOFFSET_X+c.flipX(), 
-					(int) c.getHitbox().y - CRABBY_DRAWOFFSET_Y, 
-					CRABBY_WIDTH*c.flipW(),
-					CRABBY_HEIGHT, null);
-			c.drawAttackBox(g, xLvlOffset);
+			if(c.isActive()) {
+				g.drawImage(crabbyArr[c.getEnemyState()][c.getAniIndex()], 
+						(int) c.getHitbox().x - xLvlOffset - CRABBY_DRAWOFFSET_X+c.flipX(), 
+						(int) c.getHitbox().y - CRABBY_DRAWOFFSET_Y, 
+						CRABBY_WIDTH*c.flipW(),
+						CRABBY_HEIGHT, null);
+				c.drawAttackBox(g, xLvlOffset);
+			}
 		}
 	}
 	public void checkEnemyHit(Rectangle2D.Float attackBox) {
 		for (Crabby c : crabbies) {
-			if(attackBox.intersects(c.getHitbox())) {
+			if(c.isActive() && attackBox.intersects(c.getHitbox())) {
 				c.hurt(10);
 				return;
 			}
