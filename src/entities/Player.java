@@ -4,11 +4,13 @@ import static utils.Constants.Directions.RIGHT;
 import static utils.Constants.Directions.LEFT;
 import static utils.Constants.Directions.RIGHT;
 import static utils.Constants.Directions.UP;
-import static utils.Constants.PlayerConstatns.IGRAC;
 import static utils.Constants.PlayerConstatns.RUNNING;
 import static utils.Constants.PlayerConstatns.*;
 import static utils.HelpMethods.*;
+
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +25,7 @@ import static utils.HelpMethods.canMoveHere;
 public class Player extends Entity {
 		private BufferedImage[][] igracAnimacija;
 		private int aniTick, aniIndex, aniSpeed = 25;
-		private int playerAction = IGRAC;
+		private int playerAction = IDLE;
 		private boolean moving = false, attacking = false;
 		private boolean left, up, right, down, jump;
 		private float playerSpeed = 1.0f*Game.SCALE;
@@ -36,23 +38,79 @@ public class Player extends Entity {
 		private float jumpSpeed = -2.25f * Game.SCALE;
 		private float fallSpeedAfterCollision = 0.5f * Game.SCALE;
 		private boolean inAir = false;
+		//status bar UI
+		private BufferedImage statusBarImg;
+
+		private int statusBarWidth = (int) (192 * Game.SCALE);
+		private int statusBarHeight = (int) (58 * Game.SCALE);
+		private int statusBarX = (int) (10 * Game.SCALE);
+		private int statusBarY = (int) (10 * Game.SCALE);
+
+		private int healthBarWidth = (int) (150 * Game.SCALE);
+		private int healthBarHeight = (int) (4 * Game.SCALE);
+		private int healthBarXStart = (int) (34 * Game.SCALE);
+		private int healthBarYStart = (int) (14 * Game.SCALE);
+
+		private int maxHealth = 100;
+		private int currentHealth = maxHealth;
+		private int healthWidth = healthBarWidth;
+		
+		//attack box
+		private Rectangle2D.Float attackBox;
+		
+		private int flipX=0;
+		private int flipW=1;
 		
 
 		public Player(float x, float y, int width, int height) {
 			super(x, y, width, height);
 			loadAniamtions();
 			initHitbox(x, y,(int)( 20 * Game.SCALE),(int)( 27 * Game.SCALE));
+			initAttackBox();
+		}
+
+		private void initAttackBox() {
+			attackBox = new Rectangle2D.Float(x, y, (int) (20 * Game.SCALE), (int) (20 * Game.SCALE));			
 		}
 
 		public void update() {
+			updateHealthBar();
+			updateAttackBox();
 			updatePos();
 			updateAnimationTick();
 			setAnimation();
 		}
 
+		private void updateAttackBox() {
+			if (right)
+				attackBox.x = hitbox.x + hitbox.width + (int) (Game.SCALE * 10);
+			else if (left)
+				attackBox.x = hitbox.x - hitbox.width - (int) (Game.SCALE * 10);
+
+			attackBox.y = hitbox.y + (Game.SCALE * 10);
+		}
+
+		private void updateHealthBar() {
+			healthWidth = (int) ((currentHealth / (float) maxHealth) * healthBarWidth);
+
+		}
+
 		public void render(Graphics g,int lvlOffset) {
-			g.drawImage(igracAnimacija[playerAction][aniIndex], (int) (hitbox.x - xDrawOffset) - lvlOffset, (int) (hitbox.y - yDrawOffset), width, height, null);
+			g.drawImage(igracAnimacija[playerAction][aniIndex], (int) (hitbox.x - xDrawOffset) - lvlOffset + flipX, (int) (hitbox.y - yDrawOffset), width * flipW, height, null);
 			//drawHitbox(g,xLvlOffset);
+			drawAttackBox(g,lvlOffset);
+			drawUI(g);
+		}
+
+		private void drawAttackBox(Graphics g, int lvlOffsetX) {
+			g.setColor(Color.red);
+			g.drawRect((int) attackBox.x - lvlOffsetX, (int) attackBox.y, (int) attackBox.width, (int) attackBox.height);
+		}
+
+		private void drawUI(Graphics g) {
+			g.drawImage(statusBarImg, statusBarX, statusBarY, statusBarWidth, statusBarHeight, null);
+			g.setColor(Color.red);
+			g.fillRect(healthBarXStart + statusBarX, healthBarYStart + statusBarY, healthWidth, healthBarHeight);
 		}
 
 		private void updateAnimationTick() {
@@ -75,7 +133,7 @@ public class Player extends Entity {
 			if (moving)
 				playerAction = RUNNING;
 			else
-				playerAction = IGRAC;
+				playerAction = IDLE;
 			if(inAir) {
 				if(airSpeed<0)//up
 					playerAction=JUMP;
@@ -84,7 +142,7 @@ public class Player extends Entity {
 			}
 
 			if (attacking)
-				playerAction = ATTACK_1;
+				playerAction = ATTACK;
 
 			if (startAni != playerAction)
 				resetAniTick();
@@ -105,11 +163,16 @@ public class Player extends Entity {
 					return;
 			float xSpeed = 0;
 
-			if (left)
+			if (left) {
 				xSpeed -= playerSpeed;
-			if (right)
+				flipX=width;
+				flipW=-1;
+			}
+			if (right) {
 				xSpeed += playerSpeed;
-
+				flipX=0;
+				flipW=1;
+			}
 			if (!inAir)
 				if (!isEntityOnFloor(hitbox, lvlData))
 					inAir = true;
@@ -153,13 +216,21 @@ public class Player extends Entity {
 			} else {
 				hitbox.x = getEntityXPosNextToWall(hitbox, xSpeed);
 			}
-
+			
 		}
-
+		public void changeHealth(int value) {
+			currentHealth +=value;
+			if(currentHealth<=0) {
+				currentHealth=0;
+				//gameOver();
+			}else if(currentHealth>=maxHealth){
+				currentHealth=maxHealth;
+			}
+		}
 		private void loadAniamtions() {
 			BufferedImage img = LoadSave.getSpriteAtlas(LoadSave.playerAtlas);
-				int rows = 9; // Broj redova u slici
-			    int cols = 6; // Broj kolona u slici
+				int rows = 7; // Broj redova u slici
+			    int cols = 8; // Broj kolona u slici
 			    int characterWidth = 64; // Širina lika
 			    int characterHeight = 40; // Visina lika
 
@@ -172,6 +243,7 @@ public class Player extends Entity {
 			            igracAnimacija[j][i] = img.getSubimage(x, y, characterWidth, characterHeight);
 			        }
 			    }
+			    statusBarImg=LoadSave.getSpriteAtlas(LoadSave.STATUS_BAR);
 			
 		}
 		public void loadLevelData(int[][] lvlData) {

@@ -1,23 +1,38 @@
 package entities;
-import static utils.Constants.Directions.LEFT;
+import static utils.Constants.Directions.*;
 import static utils.Constants.EnenmyConstants.*;
 import static utils.HelpMethods.canMoveHere;
 import static utils.HelpMethods.getEntityYPosUnderRoofOrAboveFloor;
 import static utils.HelpMethods.isEntityOnFloor;
 import static utils.HelpMethods.isFloor;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.geom.Rectangle2D;
+
 import main.Game;
 public class Crabby extends Enemy {
+	//attack box
+	private Rectangle2D.Float attackBox;
+	private int attackBoxOffsetX;
 
 	public Crabby(float x, float y) {
 		super(x, y, CRABBY_WIDTH, CRABBY_HEIGHT, CRABBY);
 		initHitbox(x,y,(int)(22*Game.SCALE),(int)(19*Game.SCALE));
-		
+		initAttackBox();
+	}
+	private void initAttackBox() {
+		attackBox=new Rectangle2D.Float(x,y,(int)(Game.SCALE*82),(int)(Game.SCALE*19));
+		attackBoxOffsetX = (int)(Game.SCALE*30);
 	}
 	public void update(int[][] lvlData,Player player) {
 		updateMove(lvlData,player);
 		updateAnimationTick();
-
+		updateAttackBox();
+	}
+	private void updateAttackBox() {
+		attackBox.x=hitbox.x - attackBoxOffsetX;
+		attackBox.y=hitbox.y ;
 	}
 	private void updateMove(int[][] lvlData, Player player) {
 		if (firstUpdate) 
@@ -42,7 +57,30 @@ public class Crabby extends Enemy {
 		}
 
 	}
-	
-
+	public void drawAttackBox(Graphics g,int xLvlOffset) {
+		g.setColor(Color.red);
+		g.drawRect((int)(attackBox.x-xLvlOffset), (int)attackBox.y,(int) attackBox.width, (int)attackBox.height);
+		
+	}
+	public int flipX() {
+		if(walkDir==RIGHT) {
+			return width;
+		}else
+			return 0;
+	}
+	public int flipW() {
+		if(walkDir==RIGHT) {
+			return -1;
+		}else
+			return 1;
+	}
+	public void hurt(int amount) {
+		currentHealth-=amount;
+		if(currentHealth<=0) {
+			newState(DEAD);
+		}else {
+			newState(HIT);
+		}
+	}
 
 }

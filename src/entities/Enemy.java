@@ -3,6 +3,7 @@ import static utils.Constants.EnenmyConstants.*;
 import static utils.HelpMethods.*;
 
 import java.awt.geom.Rectangle2D.Float;
+import java.security.Identity;
 
 import static utils.Constants.Directions.*;
 import main.Game;
@@ -18,12 +19,17 @@ public abstract class Enemy extends Entity {
 	protected int walkDir = LEFT;
 	protected int tileY;
 	protected float attackDistance=Game.TILES_SIZE;
+	protected int maxHealth;
+	protected int currentHealth;
+	protected boolean active= true;
 	
 	public Enemy(float x, float y, int width, int height, int enemyType) {
 		super(x, y, width, height);
 		this.enemyType = enemyType;
 		initHitbox(x, y, width, height);
-
+		maxHealth = getMaxHealth(enemyType);
+		currentHealth=maxHealth;
+		
 	}
 	protected void firstUpdateCheck(int[][] lvlData) {
 		if (!isEntityOnFloor(hitbox, lvlData))
@@ -93,8 +99,10 @@ public abstract class Enemy extends Entity {
 			aniIndex++;
 			if (aniIndex >= getSpriteAmount(enemyType, enemyState)) {
 				aniIndex = 0;
-				if(enemyState==ATTACK)
+				if(enemyState==ATTACK || enemyState==HIT)
 					enemyState=IDLE;
+				else if(enemyState==DEAD)
+					active=false;
 			}
 		}
 	}
@@ -114,5 +122,7 @@ public abstract class Enemy extends Entity {
 	public int getEnemyState() {
 		return enemyState;
 	}
-
+	public boolean isActive() {
+		return active;
+	}
 }
