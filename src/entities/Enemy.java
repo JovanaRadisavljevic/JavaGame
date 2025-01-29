@@ -141,4 +141,13 @@ public abstract class Enemy extends Entity {
 		attackChecked=true;
 		
 	}
+	public void resetEnemy() {
+		hitbox.x=x;
+		hitbox.y=y;
+		firstUpdate=true;
+		currentHealth=maxHealth;
+		newState(IDLE);
+		active=true;
+		fallSpeed=0;
+	}
 }
