@@ -1,7 +1,14 @@
 package utils;
 
-import java.awt.geom.Rectangle2D;
+import static utils.Constants.EnenmyConstants.CRABBY;
 
+import java.awt.Color;
+import java.awt.Point;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+
+import entities.Crabby;
 import main.Game;
 
 public class HelpMethods {
@@ -71,7 +78,10 @@ public class HelpMethods {
 
 	}
 	public static boolean isFloor(Rectangle2D.Float hitbox, float xSpeed, int[][] lvlData) {
-		return isSolid(hitbox.x + xSpeed, hitbox.y + hitbox.height + 1, lvlData);
+		if(xSpeed>0) {
+			return isSolid(hitbox.x + xSpeed + hitbox.width, hitbox.y + hitbox.height + 1, lvlData);
+		}else
+			return isSolid(hitbox.x + xSpeed, hitbox.y + hitbox.height + 1, lvlData);
 	}
 	public static boolean isAllTilesWalkable(int xStart,int xEnd,int y,int[][] lvlData) {
 		for (int i = 0; i < xEnd-xStart; i++) {
@@ -94,5 +104,41 @@ public class HelpMethods {
 		}else {
 			return isAllTilesWalkable(fistXTile, secondXTile, tileY, lvlData);
 		}
+	}
+	
+	public static int[][] GetLevelData(BufferedImage img) {
+		int[][] lvlData = new int[img.getHeight()][img.getWidth()];
+		for (int j = 0; j < img.getHeight(); j++)
+			for (int i = 0; i < img.getWidth(); i++) {
+				Color color = new Color(img.getRGB(i, j));
+				int value = color.getRed();
+				if (value >= 48)
+					value = 0;
+				lvlData[j][i] = value;
+			}
+		return lvlData;
+	}
+
+	public static ArrayList<Crabby> GetCrabs(BufferedImage img) {
+		ArrayList<Crabby> list = new ArrayList<>();
+		for (int j = 0; j < img.getHeight(); j++)
+			for (int i = 0; i < img.getWidth(); i++) {
+				Color color = new Color(img.getRGB(i, j));
+				int value = color.getGreen();
+				if (value == CRABBY)
+					list.add(new Crabby(i * Game.TILES_SIZE, j * Game.TILES_SIZE));
+			}
+		return list;
+	}
+
+	public static Point GetPlayerSpawn(BufferedImage img) {
+		for (int j = 0; j < img.getHeight(); j++)
+			for (int i = 0; i < img.getWidth(); i++) {
+				Color color = new Color(img.getRGB(i, j));
+				int value = color.getGreen();
+				if (value == 100)
+					return new Point(i * Game.TILES_SIZE, j * Game.TILES_SIZE);
+			}
+		return new Point(1 * Game.TILES_SIZE, 1 * Game.TILES_SIZE);
 	}
 }

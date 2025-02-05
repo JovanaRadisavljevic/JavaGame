@@ -2,44 +2,81 @@ package levels;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Iterator;
 
+import gameStates.Gamestate;
 import main.Game;
 import utils.LoadSave;
 
+
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+
+import main.Game;
 public class LevelManager {
+
 	private Game game;
 	private BufferedImage[] levelSprite;
-	private Level levelOne;
-	
+	private ArrayList<Level> levels;
+	private int lvlIndex = 0;
+
 	public LevelManager(Game game) {
-		this.game=game;
-		importOutSideSprites();
-		levelOne=new Level(LoadSave.getLevelData());
+		this.game = game;
+		importOutsideSprites();
+		levels = new ArrayList<>();
+		buildAllLevels();
 	}
-	private void importOutSideSprites() {
-		BufferedImage img = LoadSave.getSpriteAtlas(LoadSave.levelAtlas);
-		levelSprite=new BufferedImage[48];
-		for (int j = 0; j < 4; j++) {//heigth
-			for (int i = 0; i < 12; i++) {//width
-				int index=j*12+i;
-				levelSprite[index]=img.getSubimage(i*32, j*32, 32, 32);
-			}
+
+	public void loadNextLevel() {
+		lvlIndex++;
+		if (lvlIndex >= levels.size()) {
+			lvlIndex = 0;
+			System.out.println("No more levels! Game Completed!");
+			Gamestate.state = Gamestate.MENU;
 		}
+
+		Level newLevel = levels.get(lvlIndex);
+		game.getPlaying().getEnemyManager().loadEnemies(newLevel);
+		game.getPlaying().getPlayer().loadLvlData(newLevel.getLevelData());
+		game.getPlaying().setMaxLevelOffset(newLevel.getLvlOffset());
 	}
-	public void draw(Graphics g,int lvlOffset) {
-		for (int j = 0; j < Game.TILES_IN_HIGHT; j++) {
-			for (int i = 0; i < levelOne.getLeveldata()[0].length; i++) {
-				int index= levelOne.getSpritesIndex(i, j);
-				g.drawImage(levelSprite[index], i*game.TILES_SIZE - lvlOffset, j*game.TILES_SIZE,game.TILES_SIZE,game.TILES_SIZE, null);
+
+	private void buildAllLevels() {
+		BufferedImage[] allLevels = LoadSave.getAllLevels();
+		for (BufferedImage img : allLevels)
+			levels.add(new Level(img));
+	}
+
+	private void importOutsideSprites() {
+		BufferedImage img = LoadSave.getSpriteAtlas(LoadSave.LEVEL_ATLAS);
+		levelSprite = new BufferedImage[48];
+		for (int j = 0; j < 4; j++)
+			for (int i = 0; i < 12; i++) {
+				int index = j * 12 + i;
+				levelSprite[index] = img.getSubimage(i * 32, j * 32, 32, 32);
 			}
-		}
-		g.drawImage(levelSprite[2], 0, 0, null);
-		
 	}
+
+	public void draw(Graphics g, int lvlOffset) {
+		for (int j = 0; j < Game.TILES_IN_HIGHT; j++)
+			for (int i = 0; i < levels.get(lvlIndex).getLevelData()[0].length; i++) {
+				int index = levels.get(lvlIndex).getSpriteIndex(i, j);
+				g.drawImage(levelSprite[index], Game.TILES_SIZE * i - lvlOffset, Game.TILES_SIZE * j, Game.TILES_SIZE, Game.TILES_SIZE, null);
+			}
+	}
+
 	public void update() {
-		
+
 	}
+
 	public Level getCurrentLevel() {
-		return levelOne;
+		return levels.get(lvlIndex);
 	}
+
+	public int getAmountOfLevels() {
+		return levels.size();
+	}
+
 }

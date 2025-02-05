@@ -10,6 +10,7 @@ import static utils.HelpMethods.*;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -58,7 +59,6 @@ public class Player extends Entity {
 		
 		//attack box
 		private Rectangle2D.Float attackBox;
-		
 		private int flipX=0;
 		private int flipW=1;
 		private boolean attackChecked;
@@ -71,7 +71,12 @@ public class Player extends Entity {
 			initHitbox(x, y,(int)( 20 * Game.SCALE),(int)( 27 * Game.SCALE));
 			initAttackBox();
 		}
-
+		public void setSpawn(Point spawn) {
+			this.x = spawn.x;
+			this.y = spawn.y;
+			hitbox.x = x;
+			hitbox.y = y;
+		}
 		private void initAttackBox() {
 			attackBox = new Rectangle2D.Float(x, y, (int) (20 * Game.SCALE), (int) (20 * Game.SCALE));			
 		}
@@ -272,11 +277,10 @@ public class Player extends Entity {
 			    statusBarImg=LoadSave.getSpriteAtlas(LoadSave.STATUS_BAR);
 			
 		}
-		public void loadLevelData(int[][] lvlData) {
-			this.lvlData=lvlData;
-			if(!isEntityOnFloor(hitbox, lvlData)) {
-				inAir=true;
-			}
+		public void loadLvlData(int[][] lvlData) {
+			this.lvlData = lvlData;
+			if (!isEntityOnFloor(hitbox, lvlData))
+				inAir = true;
 		}
 
 		public void resetDirBooleans() {

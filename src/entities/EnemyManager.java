@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import gameStates.Playing;
+import levels.Level;
 import utils.LoadSave;
 import static utils.Constants.EnenmyConstants.*;
 
@@ -19,21 +20,23 @@ public class EnemyManager {
 	public EnemyManager(Playing playing) {
 		this.playing = playing;
 		loadEnemyImgs();
-		addEnemies();
 	}
 
-	private void addEnemies() {
-		crabbies = LoadSave.getCrabs();
-		System.out.println("velicina liste " + crabbies.size());
+	public void loadEnemies(Level level) {
+		crabbies =level.getCrabs();
 	}
 
 	public void update(int[][] lvlData,Player player) {
+		boolean isAnyActive = false;
 		for (Crabby c : crabbies) {
 			if(c.isActive()) {
 				c.update(lvlData,player);
+				isAnyActive=true;
 			}
 		}
-			
+		if(!isAnyActive) {
+			playing.setLevelCompleted(true);
+		}
 	}
 
 	public void draw(Graphics g, int xLvlOffset) {
@@ -48,7 +51,6 @@ public class EnemyManager {
 						(int) c.getHitbox().y - CRABBY_DRAWOFFSET_Y, 
 						CRABBY_WIDTH*c.flipW(),
 						CRABBY_HEIGHT, null);
-				//c.drawAttackBox(g, xLvlOffset);
 				//c.drawAttackBox(g, xLvlOffset);
 			}
 		}
